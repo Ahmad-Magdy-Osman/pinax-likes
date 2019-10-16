@@ -71,7 +71,7 @@ def likes_widget(context, user, obj, template_name="pinax/likes/_widget.html"):
     """
     request = context["request"]
     return loader.get_template(template_name).render(
-        widget_context(user, obj, request))
+        widget_context(user, obj, request), request)
 
 
 class LikeRenderer(template.Node):

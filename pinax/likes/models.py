@@ -9,22 +9,20 @@ from django.utils.encoding import python_2_unicode_compatible
 @python_2_unicode_compatible
 class Like(models.Model):
 
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL,
-                               related_name="liking", on_delete=models.CASCADE)
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="liking", on_delete=models.CASCADE
+    )
 
     receiver_content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    receiver_object_id = models.PositiveIntegerField()
+    receiver_object_id = models.UUIDField()
     receiver = GenericForeignKey(
-        ct_field="receiver_content_type",
-        fk_field="receiver_object_id"
+        ct_field="receiver_content_type", fk_field="receiver_object_id"
     )
 
     timestamp = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        unique_together = (
-            ("sender", "receiver_content_type", "receiver_object_id"),
-        )
+        unique_together = (("sender", "receiver_content_type", "receiver_object_id"),)
 
     def __str__(self):
         return "{0} likes {1}".format(self.sender, self.receiver)
@@ -34,7 +32,7 @@ class Like(models.Model):
         obj, liked = cls.objects.get_or_create(
             sender=sender,
             receiver_content_type=content_type,
-            receiver_object_id=object_id
+            receiver_object_id=object_id,
         )
         if not liked:
             obj.delete()

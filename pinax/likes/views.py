@@ -5,7 +5,7 @@ from django.http import (
     Http404,
     HttpResponseForbidden,
     HttpResponseRedirect,
-    JsonResponse
+    JsonResponse,
 )
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
@@ -17,9 +17,10 @@ from pinax.likes.utils import widget_context
 
 
 class LikeToggleView(LoginRequiredMixin, View):
-
     def post(self, request, *args, **kwargs):
-        content_type = get_object_or_404(ContentType, pk=self.kwargs.get("content_type_id"))
+        content_type = get_object_or_404(
+            ContentType, pk=self.kwargs.get("content_type_id")
+        )
         try:
             obj = content_type.get_object_for_this_type(pk=self.kwargs.get("object_id"))
         except ObjectDoesNotExist:
@@ -28,7 +29,13 @@ class LikeToggleView(LoginRequiredMixin, View):
         if not request.user.has_perm("likes.can_like", obj):
             return HttpResponseForbidden()
 
-        like, liked = Like.like(request.user, content_type, obj.id)
+        try:
+            like, liked = Like.like(request.user, content_type, obj.PId)
+        except Exception:
+            try:
+                like, liked = Like.like(request.user, content_type, obj.EId)
+            except Exception:
+                like, liked = Like.like(request.user, content_type, obj.id)
 
         if liked:
             object_liked.send(sender=Like, like=like, request=request)
@@ -41,11 +48,7 @@ class LikeToggleView(LoginRequiredMixin, View):
             if request.GET.get("t") == "b":
                 template = "pinax/likes/_widget_brief.html"
             data = {
-                "html": render_to_string(
-                    template,
-                    context=html_ctx,
-                    request=request
-                ),
+                "html": render_to_string(template, context=html_ctx, request=request),
                 "likes_count": html_ctx["like_count"],
                 "liked": html_ctx["liked"],
             }

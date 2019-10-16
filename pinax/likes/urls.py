@@ -5,7 +5,9 @@ from . import views
 app_name = "pinax_likes"
 
 urlpatterns = [
-    url(r"^like/(?P<content_type_id>\d+):(?P<object_id>\d+)/$",
+    url(
+        r"^like/(?P<content_type_id>\d+):(?P<object_id>[^/]+)/$",
         views.LikeToggleView.as_view(),
-        name="like_toggle")
+        name="like_toggle",
+    )
 ]
